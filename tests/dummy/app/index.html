@@ -1,25 +1,123 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Dummy</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Dummy</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    {{content-for "head"}}
+	{{content-for "head"}}
 
-    <link rel="stylesheet" href="{{rootURL}}assets/vendor.css">
-    <link rel="stylesheet" href="{{rootURL}}assets/dummy.css">
+	<link rel="stylesheet" href="{{rootURL}}assets/vendor.css">
+	<link rel="stylesheet" href="{{rootURL}}assets/dummy.css">
 
-    {{content-for "head-footer"}}
-  </head>
-  <body>
-    {{content-for "body"}}
+	{{content-for "head-footer"}}
+</head>
+<body>
+{{content-for "body"}}
 
-    <script src="{{rootURL}}assets/vendor.js"></script>
-    <script src="{{rootURL}}assets/dummy.js"></script>
+<script src="{{rootURL}}assets/vendor.js"></script>
+<script src="{{rootURL}}assets/dummy.js"></script>
 
-    {{content-for "body-footer"}}
-  </body>
+{{content-for "body-footer"}}
+
+<script type="text/javascript">
+  (() => {
+    window.addEventListener('load', () => {
+      // Check if the app is an Ember app.
+      if (!Ember) {
+        console.info(`Ember is not found.`)
+        return
+      }
+
+      // Check if the add-on is added.
+      if (!window._renderValidator) {
+        console.info(`The app does not have the render validation capability.`)
+        return
+      }
+
+      // Wait for the checking completed.
+      const intervalId = setInterval(() => {
+        if (window._renderValidator.status === 'validating') {
+          console.log(`Still be validating`)
+          return
+        }
+
+        clearInterval(intervalId)
+
+        console.log(`window._renderValidator.status:`, window._renderValidator.status)
+
+        if (window._renderValidator.status === 'no-validation') {
+          console.info(`No validation`)
+	        return
+        }
+
+        if (window._renderValidator.status === 'done') {
+          console.log(`window._renderValidator.result:`, window._renderValidator.result)
+
+          switch (window._renderValidator.result) {
+	          case 'success':
+              console.info(`The page is rendered successfully`)
+              break
+	          case 'failure':
+              console.info(`The page is rendered INCORRECTLY`)
+	            break
+	          case 'error':
+              console.error(window._renderValidator.error)
+              break
+	          default:
+	            throw new Error(`Unexpected result: ${window._renderValidator.result}`)
+          }
+        }
+      }, 100)
+    })
+
+//    let checkPage = () => {
+//      if (!window._renderValidator) {
+//        console.log(`_renderValidator is not ready`)
+//        return
+//      }
+//
+//      console.log(`_renderValidator is ready`)
+//      clearInterval(intervalId)
+//
+//      console.log(`_renderValidator:`, _renderValidator)
+//    }
+//    checkPage()
+//    const intervalId = setInterval(checkPage, 10)
+
+//      let oldStatus = _renderValidator.status
+//      let oldResult = _renderValidator.result
+//      setInterval(() => {
+//        if (_renderValidator.status !== oldStatus) {
+//          console.log(`status:`, _renderValidator.status)
+//        }
+//        if (_renderValidator.result !== oldResult) {
+//          console.log(`result`, _renderValidator.result)
+//        }
+//      }, 100)
+
+//      if (_renderValidator.status === 'initialing') {
+//        return
+//      }
+//
+//      console.log(`status:`, _renderValidator.status)
+//
+//      if (_renderValidator.status === 'failed') {
+//        return false
+//      }
+//
+//      if (_renderValidator.status === 'no-check-page') {
+//        return true
+//      }
+//
+//      if (_renderValidator.status === 'success') {
+//        return true
+//      }
+//
+//      throw new Error('Unexpected state')
+  })()
+</script>
+</body>
 </html>
