@@ -14,14 +14,14 @@ const Result = {
 }
 
 export function initialize(appInstance) {
+
   window._renderValidator = {
     status: Status.INITIALIZING,
     result: undefined,
     error: undefined,
-    appInstance, // TODO: remove this. It's for development.
   }
 
-  Ember.run.schedule('afterRender', function() {
+  Ember.run(() => {
     window._renderValidator.status = Status.VALIDATING
 
     const currentPath = appInstance.lookup('router:main').currentPath
@@ -85,5 +85,5 @@ export function initialize(appInstance) {
 
 export default {
   name: 'render-validator',
-  initialize
+  initialize,
 }
