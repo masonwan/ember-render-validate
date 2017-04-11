@@ -1,5 +1,3 @@
-import Ember from 'ember'
-
 const Status = {
   INITIALIZING: 'initializing',
   VALIDATING: 'validating',
@@ -21,66 +19,68 @@ export function initialize(appInstance) {
     error: undefined,
   }
 
-  Ember.run(() => {
-    window._renderValidator.status = Status.VALIDATING
+  window._renderValidator.status = Status.VALIDATING
 
-    const currentPath = appInstance.lookup('router:main').currentPath
-    const route = appInstance.lookup(`route:${currentPath}`)
+  const router = appInstance.lookup('router:main')
 
-    let validatePage = route.validatePage
-    if (!validatePage) {
-      window._renderValidator.status = Status.NO_VALIDATION
-      return
-    }
+  router
+    .on('didTransition', () => {
+      const route = appInstance.lookup(`route:${router.currentPath}`)
 
-    if (typeof validatePage !== 'function') {
-      setupForError(new Error(`"validatePage" is not a method but "${validatePage.constructor}".`))
-      return
-    }
+      let validatePage = route.validatePage
+      if (!validatePage) {
+        window._renderValidator.status = Status.NO_VALIDATION
+        return
+      }
 
-    let promise
-    try {
-      promise = validatePage((err, isSuccessful) => {
-        if (err) {
-          setupForError(err)
-          return
-        }
-        setupForResult(isSuccessful)
-      })
-    } catch (err) {
-      setupForError(err)
-      return
-    }
+      if (typeof validatePage !== 'function') {
+        setupForError(new Error(`"validatePage" is not a method but "${validatePage.constructor}".`))
+        return
+      }
 
-    if (promise == null) {
-      // `validatePage` is using callback style.
-      return
-    }
-
-    if (typeof promise.then === 'function' && typeof promise.catch === 'function') {
-      promise
-        .then((isSuccessful) => {
+      let promise
+      try {
+        promise = validatePage((err, isSuccessful) => {
+          if (err) {
+            setupForError(err)
+            return
+          }
           setupForResult(isSuccessful)
         })
-        .catch((err) => {
-          setupForError(err)
-        })
-      return
-    }
+      } catch (err) {
+        setupForError(err)
+        return
+      }
 
-    throw new Error(`Failed to validate the page. The returned object of \`validatePage\` does not look like a Promise, but "${promise}"`)
-  })
+      if (promise == null) {
+        // `validatePage` is using callback style.
+        return
+      }
 
-  function setupForResult(isSuccessful) {
-    window._renderValidator.status = Status.DONE
-    window._renderValidator.result = isSuccessful ? Result.SUCCESS : Result.FAILURE
-  }
+      if (typeof promise.then === 'function' && typeof promise.catch === 'function') {
+        promise
+          .then((isSuccessful) => {
+            setupForResult(isSuccessful)
+          })
+          .catch((err) => {
+            setupForError(err)
+          })
+        return
+      }
 
-  function setupForError(err) {
-    window._renderValidator.status = Status.DONE
-    window._renderValidator.result = Result.ERROR
-    window._renderValidator.error = err
-  }
+      throw new Error(`Failed to validate the page. The returned object of \`validatePage\` does not look like a Promise, but "${promise}"`)
+    })
+}
+
+function setupForResult(isSuccessful) {
+  window._renderValidator.status = Status.DONE
+  window._renderValidator.result = isSuccessful ? Result.SUCCESS : Result.FAILURE
+}
+
+function setupForError(err) {
+  window._renderValidator.status = Status.DONE
+  window._renderValidator.result = Result.ERROR
+  window._renderValidator.error = err
 }
 
 export default {

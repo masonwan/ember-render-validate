@@ -5,15 +5,26 @@ import destroyApp from '../../helpers/destroy-app'
 import sinon from 'sinon'
 
 const Promise = Ember.RSVP
-let lookupStub = sinon.stub()
+let lookupStub
 
 module('Unit | Instance Initializer | render validator', {
   beforeEach() {
+    lookupStub = sinon.stub()
+
+    let router = {
+      currentPath: 'currentPath',
+      on: (eventName, callback) => {
+        if (eventName === 'didTransition') {
+          Ember.run(() => {
+            callback()
+          })
+        }
+      },
+    }
+
     lookupStub
       .withArgs('router:main')
-      .returns({
-        currentPath: 'currentPath',
-      })
+      .returns(router)
 
     Ember.run(() => {
       this.application = Ember.Application.create();
